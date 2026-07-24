@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex — Console do Operador</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="console">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">▍</span>
+      <span class="brand-name">CODEX</span>
+      <span class="brand-sub">console do operador</span>
+    </div>
+    <div class="topbar-right">
+      <button id="status-pill" class="pill pill-unknown" title="Status do Codex">
+        <span class="dot"></span><span id="status-label">verificando…</span>
+      </button>
+      <button id="config-toggle" class="icon-btn" title="Configurações">⚙</button>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- LEDGER: lista de threads -->
+    <aside class="ledger">
+      <button id="new-thread-btn" class="new-thread-btn">+ nova thread</button>
+      <div class="ledger-line"></div>
+      <div id="session-list" class="session-list">
+        <div class="empty-hint">nenhuma thread ainda</div>
+      </div>
+    </aside>
+
+    <!-- TRANSCRIPT -->
+    <main class="transcript-panel">
+      <div class="transcript-header">
+        <span class="label">thread</span>
+        <span id="current-thread" class="mono muted">— nenhuma thread selecionada —</span>
+      </div>
+
+      <div id="transcript" class="transcript">
+        <div class="transcript-empty">
+          Envie uma instrução abaixo para abrir uma nova thread com o Codex.
+        </div>
+      </div>
+
+      <form id="chat-form" class="chat-form">
+        <span class="prompt-caret">›</span>
+        <textarea id="chat-input" rows="2" placeholder="Instrução para o Codex… (Shift+Enter para nova linha)"></textarea>
+        <button type="submit" id="send-btn" class="send-btn">executar</button>
+      </form>
+      <div id="error-banner" class="error-banner hidden"></div>
+    </main>
+
+    <!-- CONFIG DRAWER -->
+    <aside id="config-drawer" class="config-drawer hidden">
+      <div class="config-header">
+        <span>configuração</span>
+        <button id="config-close" class="icon-btn small">×</button>
+      </div>
+
+      <label class="field-label">exec_flags</label>
+      <textarea id="cfg-exec-flags" class="mono field-textarea" rows="4"></textarea>
+      <p class="field-hint">
+        Flags passadas em todo <span class="mono">codex exec</span>.
+        Controlam sandbox (<span class="mono">-s</span>) e política de
+        aprovação (<span class="mono">-c approval_policy</span>).
+      </p>
+
+      <label class="field-label">timeout (segundos)</label>
+      <input id="cfg-timeout" class="mono field-input" type="number" min="10" step="10">
+
+      <label class="field-label">workspace_dir</label>
+      <input id="cfg-workspace" class="mono field-input" type="text" readonly>
+
+      <label class="field-label">codex_bin</label>
+      <input id="cfg-bin" class="mono field-input" type="text" readonly>
+
+      <div class="config-actions">
+        <button id="cfg-save" class="btn-primary">salvar</button>
+        <button id="cfg-reset" class="btn-ghost">restaurar padrão</button>
+      </div>
+      <div id="config-saved-msg" class="saved-msg hidden">salvo.</div>
+    </aside>
+
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

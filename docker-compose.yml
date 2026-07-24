@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  codex-api:
+    build: .
+    container_name: codex-api
+    ports:
+      - "8000:8000"   # API wrapper (sempre no ar)
+      - "1455:1455"   # usado só durante o "codex login" (callback do OAuth)
+    env_file:
+      - .env
+    volumes:
+      - ./workspace:/workspace       # arquivos/projeto com os quais o Codex trabalha
+      - codex_home:/root/.codex      # credenciais de login + sessões do Codex (persistente!)
+      - sessions_data:/data          # mapeamento session_id -> thread_id da nossa API
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+
+volumes:
+  codex_home:
+  sessions_data:
