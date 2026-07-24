@@ -5,7 +5,7 @@ services:
     build: .
     container_name: codex-api
     ports:
-      - "8000:8000"   # API wrapper (sempre no ar)
+      - "8559:8000"   # API wrapper (sempre no ar)
       - "1455:1455"   # usado só durante o "codex login" (callback do OAuth)
     env_file:
       - .env
