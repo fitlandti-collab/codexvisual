@@ -48,7 +48,11 @@ def _parse_jsonl(stdout_text: str) -> tuple[Optional[str], str]:
 
         elif etype == "item.completed":
             item = event.get("item", {}) or {}
-            if item.get("item_type") in ("assistant_message", "agent_message"):
+            # O Codex CLI usa a chave "type" dentro do item (ex: "agent_message"),
+            # não "item_type". Mantemos os dois nomes de chave por segurança
+            # (compatibilidade com versões antigas/futuras do CLI).
+            item_kind = item.get("type") or item.get("item_type")
+            if item_kind in ("assistant_message", "agent_message"):
                 text = item.get("text")
                 if text:
                     reply_parts.append(text)
