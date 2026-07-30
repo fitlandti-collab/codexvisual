@@ -15,9 +15,19 @@ class CodexError(Exception):
     pass
 
 
-def _build_args(message: str, thread_id: Optional[str]) -> list[str]:
+def _build_args(
+    message: str,
+    thread_id: Optional[str],
+    image_paths: Optional[list[str]] = None,
+) -> list[str]:
     extra_flags = shlex.split(runtime_config.exec_flags)
     args = [settings.CODEX_BIN, "exec"] + extra_flags
+
+    # Suporte nativo a imagem do Codex CLI (-i / --image). Aceita múltiplas
+    # imagens separadas por vírgula. Não requer nenhuma chave/API extra: usa
+    # o mesmo login (OAuth) do Codex já autenticado no container.
+    if image_paths:
+        args += ["-i", ",".join(image_paths)]
 
     if thread_id:
         args += ["resume", thread_id, "--json", message]
@@ -65,12 +75,16 @@ def _parse_jsonl(stdout_text: str) -> tuple[Optional[str], str]:
     return thread_id, reply
 
 
-async def run_codex(message: str, thread_id: Optional[str] = None) -> tuple[str, str]:
+async def run_codex(
+    message: str,
+    thread_id: Optional[str] = None,
+    image_paths: Optional[list[str]] = None,
+) -> tuple[str, str]:
     """
     Executa o codex (nova thread ou resume de uma existente).
     Retorna (thread_id, reply).
     """
-    args = _build_args(message, thread_id)
+    args = _build_args(message, thread_id, image_paths)
 
     try:
         proc = await asyncio.create_subprocess_exec(

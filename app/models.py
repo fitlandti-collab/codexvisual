@@ -20,6 +20,10 @@ class ChatResponse(BaseModel):
     session_id: str
     thread_id: str
     reply: str
+    audio_base64: Optional[str] = Field(
+        default=None,
+        description="Resposta em áudio (WAV, base64), presente só quando voice_reply=True.",
+    )
 
 
 class SessionInfo(BaseModel):
