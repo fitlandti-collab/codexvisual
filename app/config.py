@@ -30,6 +30,17 @@ class Settings(BaseSettings):
     # Onde persistir o mapeamento session_id (nosso) -> thread_id (do codex)
     SESSIONS_FILE: str = Field(default="/data/sessions.json")
 
+    # --- WhatsApp via Evolution API (Baileys, não-oficial) ---
+    EVOLUTION_API_URL: str = Field(default="")       # ex: https://sua-evolution.up.railway.app
+    EVOLUTION_API_KEY: str = Field(default="")       # apikey global ou da instância
+    EVOLUTION_INSTANCE: str = Field(default="")      # nome da instância criada na Evolution API
+    # Segredo simples pra validar que o webhook realmente veio da sua Evolution API
+    EVOLUTION_WEBHOOK_SECRET: str = Field(default="")
+
+    # --- Telegram (Bot API oficial) ---
+    TELEGRAM_BOT_TOKEN: str = Field(default="")
+    TELEGRAM_WEBHOOK_SECRET: str = Field(default="")  # usado no header X-Telegram-Bot-Api-Secret-Token
+
     class Config:
         env_file = ".env"
 
