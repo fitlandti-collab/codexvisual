@@ -24,6 +24,14 @@ class ChatResponse(BaseModel):
         default=None,
         description="Resposta em áudio (WAV, base64), presente só quando voice_reply=True.",
     )
+    image_base64: Optional[str] = Field(
+        default=None,
+        description="Imagem gerada/editada pelo Codex no workspace nesta rodada (base64), se houver.",
+    )
+    image_mimetype: Optional[str] = Field(
+        default=None,
+        description="Mimetype da image_base64 (ex: image/png), presente só quando image_base64 vem preenchido.",
+    )
 
 
 class SessionInfo(BaseModel):

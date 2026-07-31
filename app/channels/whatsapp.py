@@ -96,3 +96,30 @@ async def send_audio(session_id: str, audio_bytes: bytes) -> None:
     async with httpx.AsyncClient(timeout=60) as client:
         resp = await client.post(url, json=body, headers=headers)
         resp.raise_for_status()
+
+
+async def send_image(session_id: str, image_bytes: bytes, mimetype: str | None = None) -> None:
+    """
+    Manda uma imagem gerada pelo Codex de volta pro WhatsApp.
+
+    Aviso de honestidade técnica: o endpoint de mídia genérica na Evolution
+    API costuma ser `/message/sendMedia/{instance}` com `mediatype: "image"`,
+    mas o nome exato do campo varia um pouco entre v1/v2 e forks. Se der 404
+    ou erro de payload, confira a doc da sua versão e ajuste só esta função —
+    o resto do fluxo não muda.
+    """
+    import base64
+    phone = _phone_from_session_id(session_id)
+    url = f"{settings.EVOLUTION_API_URL}/message/sendMedia/{settings.EVOLUTION_INSTANCE}"
+    headers = {"apikey": settings.EVOLUTION_API_KEY}
+    ext = "png" if not mimetype or "png" in mimetype else "jpg"
+    body = {
+        "number": phone,
+        "mediatype": "image",
+        "mimetype": mimetype or "image/png",
+        "media": base64.b64encode(image_bytes).decode("ascii"),
+        "fileName": f"imagem.{ext}",
+    }
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(url, json=body, headers=headers)
+        resp.raise_for_status()

@@ -73,3 +73,13 @@ async def send_audio(session_id: str, audio_bytes: bytes) -> None:
         files = {"voice": ("reply.wav", audio_bytes, "audio/wav")}
         resp = await client.post(f"{base}/sendVoice", data={"chat_id": chat_id}, files=files)
         resp.raise_for_status()
+
+
+async def send_image(session_id: str, image_bytes: bytes, mimetype: str | None = None) -> None:
+    chat_id = session_id.split(":", 1)[1]
+    base = _API_BASE.format(token=settings.TELEGRAM_BOT_TOKEN)
+    ext = "png" if not mimetype or "png" in mimetype else "jpg"
+    async with httpx.AsyncClient(timeout=60) as client:
+        files = {"photo": (f"imagem.{ext}", image_bytes, mimetype or "image/png")}
+        resp = await client.post(f"{base}/sendPhoto", data={"chat_id": chat_id}, files=files)
+        resp.raise_for_status()

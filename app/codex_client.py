@@ -10,6 +10,8 @@ from typing import Optional
 from app.config import settings
 from app.runtime_config import runtime_config
 
+_IMAGE_EXT = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+
 
 class CodexError(Exception):
     pass
@@ -37,10 +39,11 @@ def _build_args(
     return args
 
 
-def _parse_jsonl(stdout_text: str) -> tuple[Optional[str], str]:
-    """Retorna (thread_id, texto_da_resposta_final)."""
+def _parse_jsonl(stdout_text: str) -> tuple[Optional[str], str, list[str]]:
+    """Retorna (thread_id, texto_da_resposta_final, caminhos_de_imagem_geradas)."""
     thread_id = None
     reply_parts: list[str] = []
+    image_paths: list[str] = []
 
     for line in stdout_text.splitlines():
         line = line.strip()
@@ -62,27 +65,40 @@ def _parse_jsonl(stdout_text: str) -> tuple[Optional[str], str]:
             # não "item_type". Mantemos os dois nomes de chave por segurança
             # (compatibilidade com versões antigas/futuras do CLI).
             item_kind = item.get("type") or item.get("item_type")
+
             if item_kind in ("assistant_message", "agent_message"):
                 text = item.get("text")
                 if text:
                     reply_parts.append(text)
+
+            elif item_kind == "file_change":
+                # Detecta imagens que o próprio Codex criou/alterou no workspace
+                # (ex: gerou um gráfico, um diagrama, editou uma foto etc.)
+                for change in item.get("changes", []) or []:
+                    kind = change.get("kind")
+                    path = change.get("path")
+                    if not path or kind not in ("add", "update"):
+                        continue
+                    ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path else ""
+                    if ext in _IMAGE_EXT:
+                        image_paths.append(path)
 
         elif etype == "turn.failed":
             error = event.get("error", {}) or {}
             raise CodexError(f"Codex reportou falha no turno: {error}")
 
     reply = reply_parts[-1] if reply_parts else ""
-    return thread_id, reply
+    return thread_id, reply, image_paths
 
 
 async def run_codex(
     message: str,
     thread_id: Optional[str] = None,
     image_paths: Optional[list[str]] = None,
-) -> tuple[str, str]:
+) -> tuple[str, str, list[str]]:
     """
     Executa o codex (nova thread ou resume de uma existente).
-    Retorna (thread_id, reply).
+    Retorna (thread_id, reply, generated_image_paths).
     """
     args = _build_args(message, thread_id, image_paths)
 
@@ -115,7 +131,7 @@ async def run_codex(
             f"codex exec saiu com código {proc.returncode}: {stderr_text.strip() or stdout_text.strip()}"
         )
 
-    new_thread_id, reply = _parse_jsonl(stdout_text)
+    new_thread_id, reply, generated_images = _parse_jsonl(stdout_text)
     final_thread_id = new_thread_id or thread_id
 
     if not final_thread_id:
@@ -130,7 +146,7 @@ async def run_codex(
             f"Saída bruta: {stdout_text[:500]}"
         )
 
-    return final_thread_id, reply
+    return final_thread_id, reply, generated_images
 
 
 async def check_health() -> dict:
